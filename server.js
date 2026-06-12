@@ -16,14 +16,14 @@ app.use(express.json());
 // ── Static files ───────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+app.get('/matches', (req, res) => res.sendFile(path.join(__dirname, 'matches.html')));
 
 // ── MongoDB Schema ─────────────────────────────────────────────
 const dataSchema = new mongoose.Schema({
-  key:   { type: String, default: 'main' },
-  debts: { type: Array,  default: [] },
-  bets:  { type: Array,  default: [] },
-  dId:   { type: Number, default: 1 },
-  bId:   { type: Number, default: 1 },
+  key:     { type: String, default: 'main' },
+  debts:   { type: Array,  default: [] },
+  results: { type: Object, default: {} },
+  dId:     { type: Number, default: 1 },
 });
 const Store = mongoose.model('Store', dataSchema);
 
@@ -38,7 +38,7 @@ async function connectDB() {
 const fs = require('fs');
 const DATA_FILE = path.join(__dirname, 'data.json');
 function loadLocal() {
-  if (!fs.existsSync(DATA_FILE)) return { debts: [], bets: [], dId: 1, bId: 1 };
+  if (!fs.existsSync(DATA_FILE)) return { debts: [], results: {}, dId: 1 };
   return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
 }
 function saveLocal(data) { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); }
@@ -56,7 +56,7 @@ app.get('/api/data', async (req, res) => {
     if (mongoose.connection.readyState === 1) {
       let doc = await Store.findOne({ key: 'main' });
       if (!doc) doc = await Store.create({ key: 'main' });
-      return res.json({ debts: doc.debts, bets: doc.bets, dId: doc.dId, bId: doc.bId });
+      return res.json({ debts: doc.debts, results: doc.results || {}, dId: doc.dId });
     }
     res.json(loadLocal());
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -65,12 +65,12 @@ app.get('/api/data', async (req, res) => {
 // ── Admin API (write — requires token) ────────────────────────
 app.post('/api/data', requireAdmin, async (req, res) => {
   try {
-    const { debts, bets, dId, bId } = req.body;
+    const { debts, results, dId } = req.body;
     if (mongoose.connection.readyState === 1) {
-      await Store.findOneAndUpdate({ key: 'main' }, { debts, bets, dId, bId }, { upsert: true, new: true });
+      await Store.findOneAndUpdate({ key: 'main' }, { debts, results, dId }, { upsert: true, new: true });
       return res.json({ ok: true });
     }
-    saveLocal({ debts, bets, dId, bId });
+    saveLocal({ debts, results, dId });
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -86,6 +86,19 @@ app.post('/api/login', (req, res) => {
 });
 
 // ── Start ──────────────────────────────────────────────────────
+function lanIPs() {
+  const nets = require('os').networkInterfaces();
+  const out = [];
+  for (const ifaces of Object.values(nets))
+    for (const ni of ifaces || [])
+      if (ni.family === 'IPv4' && !ni.internal) out.push(ni.address);
+  return out;
+}
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`\n🚀 Debt Tracker running at http://localhost:${PORT}\n`));
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🚀 Debt Tracker running:`);
+    console.log(`   • Local:   http://localhost:${PORT}`);
+    lanIPs().forEach(ip => console.log(`   • Network: http://${ip}:${PORT}`));
+    console.log('');
+  });
 });

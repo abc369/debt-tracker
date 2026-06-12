@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Matches</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #181c27; --surface2: #1e2235; --border: #2a2f45;
+    --text: #e8eaf0; --text-secondary: #8b90a4; --text-muted: #555c75;
+    --accent: #4f7fff; --green: #3ecf8e; --radius: 10px; --radius-sm: 6px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter','Segoe UI',system-ui,sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; padding: 24px 16px 60px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  header .logo { width: 36px; height: 36px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  header p { font-size: 12px; color: var(--text-secondary); }
+  .badge-view { margin-left: auto; background: rgba(62,207,142,0.12); color: var(--green); border: 1px solid rgba(62,207,142,0.25); border-radius: 20px; padding: 3px 12px; font-size: 11px; font-weight: 600; }
+  .back-link { font-size: 12px; color: var(--text-secondary); text-decoration: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 12px; transition: border-color .15s, color .15s; }
+  .back-link:hover { border-color: var(--accent); color: var(--text); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+  .group-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .group-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .match { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .match:last-child { border-bottom: none; padding-bottom: 0; }
+  .match:first-of-type { padding-top: 4px; }
+  .team { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .team .flag { font-size: 18px; line-height: 1; width: 24px; text-align: center; flex-shrink: 0; }
+  .team .name { font-weight: 500; }
+  .vs { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; padding-left: 34px; }
+
+  footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">⚽</div>
+    <div>
+      <h1>FIFA World Cup 2026</h1>
+      <p>Matches · Group Stage</p>
+    </div>
+    <a class="back-link" href="/">← Debt Tracker</a>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>Group stage · 12 groups · 72 matches. Team names per official draw.</footer>
+</div>
+
+<script>
+  // FIFA World Cup 2026 group draw (team name + flag emoji)
+  const GROUPS = {
+    A: [['Mexico','🇲🇽'],['South Korea','🇰🇷'],['Czechia','🇨🇿'],['South Africa','🇿🇦']],
+    B: [['Switzerland','🇨🇭'],['Canada','🇨🇦'],['Qatar','🇶🇦'],['Bosnia & Herzegovina','🇧🇦']],
+    C: [['Brazil','🇧🇷'],['Morocco','🇲🇦'],['Haiti','🇭🇹'],['Scotland','🏴󠁧󠁢󠁳󠁣󠁴󠁿']],
+    D: [['USA','🇺🇸'],['Turkey','🇹🇷'],['Australia','🇦🇺'],['Paraguay','🇵🇾']],
+    E: [['Germany','🇩🇪'],['Ecuador','🇪🇨'],['Ivory Coast','🇨🇮'],['Curaçao','🇨🇼']],
+    F: [['Netherlands','🇳🇱'],['Japan','🇯🇵'],['Sweden','🇸🇪'],['Tunisia','🇹🇳']],
+    G: [['Belgium','🇧🇪'],['Egypt','🇪🇬'],['Iran','🇮🇷'],['New Zealand','🇳🇿']],
+    H: [['Spain','🇪🇸'],['Cape Verde','🇨🇻'],['Saudi Arabia','🇸🇦'],['Uruguay','🇺🇾']],
+    I: [['France','🇫🇷'],['Senegal','🇸🇳'],['Iraq','🇮🇶'],['Norway','🇳🇴']],
+    J: [['Argentina','🇦🇷'],['Algeria','🇩🇿'],['Austria','🇦🇹'],['Jordan','🇯🇴']],
+    K: [['Portugal','🇵🇹'],['DR Congo','🇨🇩'],['Uzbekistan','🇺🇿'],['Colombia','🇨🇴']],
+    L: [['England','🏴󠁧󠁢󠁥󠁮󠁧󠁿'],['Croatia','🇭🇷'],['Ghana','🇬🇭'],['Panama','🇵🇦']],
+  };
+
+  // Round-robin: every team plays every other team once (6 matches per group)
+  function pairs(teams) {
+    const out = [];
+    for (let i = 0; i < teams.length; i++)
+      for (let j = i + 1; j < teams.length; j++)
+        out.push([teams[i], teams[j]]);
+    return out;
+  }
+
+  function teamRow(t) {
+    return `<div class="team"><span class="flag">${t[1]}</span><span class="name">${t[0]}</span></div>`;
+  }
+
+  document.getElementById('grid').innerHTML = Object.entries(GROUPS).map(([g, teams]) => `
+    <div class="group">
+      <div class="group-title"><span class="dot"></span>Group ${g}</div>
+      ${pairs(teams).map(([a, b]) => `
+        <div class="match">
+          ${teamRow(a)}
+          <div class="vs">vs</div>
+          ${teamRow(b)}
+        </div>`).join('')}
+    </div>`).join('');
+</script>
+</body>
+</html>

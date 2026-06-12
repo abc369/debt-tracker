@@ -46,13 +46,22 @@
   .sec-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
   .sec-title span.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
   .form-grid { display: grid; gap: 10px; margin-bottom: 8px; }
+  .fg5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; }
+  .fg4 { grid-template-columns: 1fr 1fr 1fr 1fr auto; }
   .fg3 { grid-template-columns: 1fr 1fr 1fr auto; }
-  .fg2 { grid-template-columns: 1fr 1fr auto; }
-  @media (max-width: 600px) { .fg3, .fg2 { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .fg5, .fg4, .fg3 { grid-template-columns: 1fr; } }
   label { display: block; font-size: 11px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
   input[type="text"], input[type="number"] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s; }
   input:focus { border-color: var(--accent); }
   input::placeholder { color: var(--text-muted); }
+  select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s; }
+  select:focus { border-color: var(--accent); }
+  .ac-wrap { position: relative; }
+  .ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-top: 4px; max-height: 240px; overflow-y: auto; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+  .ac-list.open { display: block; }
+  .ac-item { padding: 8px 12px; font-size: 13px; cursor: pointer; color: var(--text); }
+  .ac-item:hover { background: var(--accent); color: #fff; }
+  .ac-empty { padding: 8px 12px; font-size: 12px; color: var(--text-muted); }
   .btn-add { height: 36px; padding: 0 16px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; align-self: end; }
   .btn-add:hover { opacity: 0.85; }
   .btn-clear { height: 32px; padding: 0 12px; background: transparent; color: var(--red); border: 1px solid rgba(244,111,111,0.3); border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; margin-top: 12px; transition: background 0.15s; }
@@ -62,12 +71,26 @@
   th { text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 6px 0 8px; }
   td { padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--text); word-break: break-word; }
   tr:last-child td { border-bottom: none; }
+  .tscroll { overflow-y: auto; margin-top: 12px; }
+  .tscroll table { margin-top: 0; }
+  .tscroll-5 { max-height: 232px; }
+  .tscroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 2; }
   .del-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 3px 6px; border-radius: var(--radius-sm); transition: background 0.12s, color 0.12s; }
   .del-btn:hover { background: rgba(244,111,111,0.12); color: var(--red); }
   .badge { display: inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--text-muted); }
   .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
   .pill-yes { background: rgba(62,207,142,0.12); color: var(--green); }
   .pill-no  { background: rgba(139,144,164,0.1); color: var(--text-muted); }
+  .winners { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; max-height: 340px; overflow-y: auto; }
+  .winners-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 2px; }
+  .winner-row { display: flex; flex-direction: column; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .winner-row .wm { font-size: 13px; font-weight: 600; color: var(--text); }
+  .wpick-line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .wpick-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); width: 64px; flex-shrink: 0; }
+  .win-pick, .rate-pick { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+  .win-pick.active { background: rgba(62,207,142,0.15); color: var(--green); border-color: rgba(62,207,142,0.4); }
+  .rate-pick.active { background: rgba(79,127,255,0.15); color: var(--accent); border-color: rgba(79,127,255,0.45); }
+  .win-pick:hover, .rate-pick:hover { border-color: var(--text-secondary); }
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   .empty { text-align: center; color: var(--text-muted); font-size: 12px; padding: 24px 0; }
   .summary-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 12px; }
@@ -126,62 +149,60 @@
   <!-- Section 1 -->
   <div class="card">
     <div class="sec-title"><span class="dot"></span>Section 1 — Debt Records</div>
-    <div class="form-grid fg3">
-      <div><label for="d-uid">User ID</label><input id="d-uid" type="text" placeholder="e.g. ANDREW"></div>
+    <div class="form-grid fg5">
+      <div><label for="d-uid">User ID</label><div class="ac-wrap"><input id="d-uid" type="text" autocomplete="off" placeholder="e.g. ANDREW" oninput="onUidInput()" onfocus="onUidInput()"><div class="ac-list" id="d-uid-ac"></div></div></div>
       <div><label for="d-amt">Debt Amount (RM)</label><input id="d-amt" type="number" min="0" step="0.01" placeholder="50.00"></div>
-      <div><label for="d-match">Match Name</label><input id="d-match" type="text" placeholder="e.g. Final A"></div>
+      <div><label for="d-match">Match Name</label><div class="ac-wrap"><input id="d-match" type="text" autocomplete="off" placeholder="Type a team, e.g. Iraq" oninput="onMatchInput()" onfocus="onMatchInput()"><div class="ac-list" id="d-match-ac"></div></div></div>
+      <div><label for="d-team">Bet On (Team)</label><select id="d-team"><option value="">— pick match first —</option></select></div>
+      <div><label for="d-rate">Bet Rate</label><input id="d-rate" type="number" min="0" step="0.01" placeholder="e.g. 1.75"></div>
       <div><label style="visibility:hidden">x</label><button class="btn-add" onclick="addDebt()">+ Add</button></div>
     </div>
     <div class="err" id="err-debt"></div>
+    <div class="tscroll tscroll-5">
     <table>
-      <colgroup><col style="width:7%"><col style="width:18%"><col style="width:38%"><col style="width:27%"><col style="width:10%"></colgroup>
-      <thead><tr><th>#</th><th>User ID</th><th>Match Name</th><th style="text-align:right">Debt (RM)</th><th></th></tr></thead>
-      <tbody id="debt-body"><tr><td colspan="5" class="empty">No records yet.</td></tr></tbody>
+      <colgroup><col style="width:5%"><col style="width:15%"><col style="width:27%"><col style="width:17%"><col style="width:18%"><col style="width:11%"><col style="width:7%"></colgroup>
+      <thead><tr><th>#</th><th>User ID</th><th>Match Name</th><th>Bet On</th><th style="text-align:right">Debt (RM)</th><th style="text-align:right">Rate</th><th></th></tr></thead>
+      <tbody id="debt-body"><tr><td colspan="7" class="empty">No records yet.</td></tr></tbody>
     </table>
+    </div>
     <button class="btn-clear" onclick="clearDebts()">🗑 Clear all debts</button>
   </div>
 
   <!-- Section 2 -->
   <div class="card">
-    <div class="sec-title"><span class="dot"></span>Section 2 — Bet Rates</div>
-    <div class="form-grid fg2">
-      <div><label for="b-match">Match Name</label><input id="b-match" type="text" placeholder="e.g. Final A"></div>
-      <div><label for="b-rate">Bet Rate (multiplier)</label><input id="b-rate" type="number" min="0" step="0.01" placeholder="e.g. 1.5"></div>
-      <div><label style="visibility:hidden">x</label><button class="btn-add" onclick="addBet()">+ Add</button></div>
-    </div>
-    <div class="err" id="err-bet"></div>
-    <table>
-      <colgroup><col style="width:7%"><col style="width:63%"><col style="width:22%"><col style="width:8%"></colgroup>
-      <thead><tr><th>#</th><th>Match Name</th><th style="text-align:right">Bet Rate</th><th></th></tr></thead>
-      <tbody id="bet-body"><tr><td colspan="4" class="empty">No bet rates yet.</td></tr></tbody>
-    </table>
-    <button class="btn-clear" onclick="clearBets()">🗑 Clear all bet rates</button>
+    <div class="sec-title"><span class="dot"></span>Section 2 — Result</div>
+    <div class="winners-title">Pick the winning team for each match</div>
+    <div class="winners" id="winners"><div class="empty" style="padding:12px 0">Add debt records in Section 1 first.</div></div>
   </div>
 
   <!-- Section 3 -->
   <div class="card">
-    <div class="sec-title"><span class="dot"></span>Section 3 — Results</div>
+    <div class="sec-title"><span class="dot"></span>Section 3 — Final Result</div>
+    <div class="tscroll tscroll-5">
     <table>
-      <colgroup><col style="width:13%"><col style="width:23%"><col style="width:13%"><col style="width:11%"><col style="width:13%"><col style="width:16%"><col style="width:11%"></colgroup>
+      <colgroup><col style="width:12%"><col style="width:18%"><col style="width:12%"><col style="width:11%"><col style="width:9%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>
       <thead>
         <tr>
-          <th>User ID</th><th>Match Name</th>
+          <th>User ID</th><th>Match Name</th><th>Bet On</th>
           <th style="text-align:right">Debt (RM)</th><th style="text-align:right">Rate</th>
           <th style="text-align:right">Final (RM)</th><th style="text-align:right">Final − Debt</th>
-          <th style="text-align:center">Match?</th>
+          <th style="text-align:center">Result</th>
         </tr>
       </thead>
-      <tbody id="result-body"><tr><td colspan="7" class="empty">Add records and bet rates to see results.</td></tr></tbody>
+      <tbody id="result-body"><tr><td colspan="8" class="empty">Add debt records to see results.</td></tr></tbody>
     </table>
+    </div>
     <hr class="divider">
-    <div class="summary-title">Summary by User ID <span class="summary-note">(matched rows only)</span></div>
+    <div class="summary-title">Summary by User ID <span class="summary-note">(decided rows only)</span></div>
     <div class="summary-grid" id="summary-grid"><div class="empty" style="grid-column:1/-1">No matched data yet.</div></div>
   </div>
 </div>
 </div>
 
 <script>
-  let debts = [], bets = [], dId = 1, bId = 1;
+  let debts = [], dId = 1;
+  let results = {};   // { matchNameLower: winningTeam }
+  let wmList = [];    // winner-picker rows, rebuilt each render: [{ key, display, teams }]
   let saveTimer = null;
   let adminToken = sessionStorage.getItem('admin-token') || '';
 
@@ -227,8 +248,7 @@
     if (e.key !== 'Enter') return;
     const t = e.target;
     if (t.id === 'l-user' || t.id === 'l-pass') doLogin();
-    if (t.id === 'd-uid' || t.id === 'd-amt' || t.id === 'd-match') addDebt();
-    if (t.id === 'b-match' || t.id === 'b-rate') addBet();
+    if (t.id === 'd-uid' || t.id === 'd-amt' || t.id === 'd-match' || t.id === 'd-rate') addDebt();
   });
 
   // ── Status ─────────────────────────────────────────────────────
@@ -242,14 +262,13 @@
 
   // ── Persistence ────────────────────────────────────────────────
   const LS_KEY = 'debt-tracker-data';
-  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({ debts, bets, dId, bId })); } catch(e) {} }
+  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({ debts, results, dId })); } catch(e) {} }
   function loadLocal() {
     try {
       const raw = localStorage.getItem(LS_KEY); if (!raw) return false;
       const d = JSON.parse(raw);
-      debts = d.debts || []; bets = d.bets || [];
+      debts = d.debts || []; results = d.results || {};
       dId = d.dId || (debts.length ? Math.max(...debts.map(x=>x.id))+1 : 1);
-      bId = d.bId || (bets.length  ? Math.max(...bets.map(x=>x.id))+1  : 1);
       return true;
     } catch(e) { return false; }
   }
@@ -259,11 +278,10 @@
       const res = await fetch('/api/data');
       if (!res.ok) throw new Error();
       const d = await res.json();
-      const serverHasData = (d.debts && d.debts.length) || (d.bets && d.bets.length);
+      const serverHasData = d.debts && d.debts.length;
       if (serverHasData) {
-        debts = d.debts || []; bets = d.bets || [];
+        debts = d.debts || []; results = d.results || {};
         dId = d.dId || (debts.length ? Math.max(...debts.map(x=>x.id))+1 : 1);
-        bId = d.bId || (bets.length  ? Math.max(...bets.map(x=>x.id))+1  : 1);
         saveLocal();
       } else if (loadLocal()) {
         await saveToServer();
@@ -283,7 +301,7 @@
       const res = await fetch('/api/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
-        body: JSON.stringify({ debts, bets, dId, bId })
+        body: JSON.stringify({ debts, results, dId })
       });
       if (res.status === 401) { doLogout(); return; }
       if (!res.ok) throw new Error();
@@ -299,35 +317,72 @@
     const uid = document.getElementById('d-uid').value.trim();
     const amt = parseFloat(document.getElementById('d-amt').value);
     const match = document.getElementById('d-match').value.trim();
+    const team = document.getElementById('d-team').value;
+    const rate = parseFloat(document.getElementById('d-rate').value);
     const err = document.getElementById('err-debt');
     if (!uid)   { err.textContent = 'Please enter a User ID.'; return; }
     if (!match) { err.textContent = 'Please enter a Match name.'; return; }
-    if (isNaN(amt) || amt < 0) { err.textContent = 'Please enter a valid amount.'; return; }
+    if (!team)  { err.textContent = 'Please pick the team this bet is on.'; return; }
+    if (isNaN(amt) || amt < 0)  { err.textContent = 'Please enter a valid amount.'; return; }
+    if (isNaN(rate) || rate < 0) { err.textContent = 'Please enter a valid bet rate.'; return; }
     err.textContent = '';
-    debts.push({ id: dId++, uid, amt, match });
+    debts.push({ id: dId++, uid, amt, match, team, rate });
     document.getElementById('d-uid').value = '';
     document.getElementById('d-amt').value = '';
     document.getElementById('d-match').value = '';
+    document.getElementById('d-rate').value = '';
+    fillTeams('d-match','d-team');
+    document.querySelectorAll('.ac-list').forEach(el => el.classList.remove('open'));
     render(); scheduleSave();
   }
 
-  function addBet() {
-    const match = document.getElementById('b-match').value.trim();
-    const rate  = parseFloat(document.getElementById('b-rate').value);
-    const err   = document.getElementById('err-bet');
-    if (!match) { err.textContent = 'Please enter a Match name.'; return; }
-    if (isNaN(rate) || rate < 0) { err.textContent = 'Please enter a valid bet rate.'; return; }
-    err.textContent = '';
-    bets.push({ id: bId++, match, rate });
-    document.getElementById('b-match').value = '';
-    document.getElementById('b-rate').value  = '';
-    render(); scheduleSave();
+  // Split "Team A vs Team B" → ['Team A','Team B']  (empty if not that format)
+  function splitTeams(match) {
+    const parts = String(match).split(/\s+vs\s+/i).map(s => s.trim()).filter(Boolean);
+    return parts.length === 2 ? parts : [];
+  }
+  // Populate a Team <select> from the match typed/picked in the linked input
+  function fillTeams(matchInputId, teamSelectId) {
+    const teams = splitTeams(document.getElementById(matchInputId).value);
+    const sel = document.getElementById(teamSelectId);
+    sel.innerHTML = teams.length
+      ? '<option value="">— pick team —</option>' + teams.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('')
+        + '<option value="Draw">Draw</option><option value="Total Goal">Total Goal</option><option value="Total Card">Total Card</option>'
+      : '<option value="">— pick match first —</option>';
   }
 
   function delDebt(id) { debts = debts.filter(r => r.id !== id); render(); scheduleSave(); }
-  function delBet(id)  { bets  = bets.filter(r => r.id !== id);  render(); scheduleSave(); }
-  function clearDebts() { if (!confirm('Clear all debt records?')) return; debts = []; dId = 1; render(); scheduleSave(); }
-  function clearBets()  { if (!confirm('Clear all bet rates?')) return; bets = []; bId = 1; render(); scheduleSave(); }
+  function clearDebts() { if (!confirm('Clear all debt records?')) return; debts = []; dId = 1; results = {}; render(); scheduleSave(); }
+  // Normalize a results entry to { teams[], rates[] } (handles legacy string / single-team forms)
+  function resOf(mk) {
+    const r = results[mk];
+    if (!r) return { teams: [], rates: [] };
+    if (typeof r === 'string') return { teams: r ? [r] : [], rates: [] };
+    const teams = Array.isArray(r.teams) ? r.teams : (r.team ? [r.team] : []);
+    return { teams, rates: Array.isArray(r.rates) ? r.rates : [] };
+  }
+  function commitRes(mk, r) {
+    if (r.teams.length === 0 && r.rates.length === 0) delete results[mk];
+    else results[mk] = { teams: r.teams, rates: r.rates };
+    render(); scheduleSave();
+  }
+  function toggleTeam(mi, ti) {
+    const m = wmList[mi]; if (!m) return;
+    const opts = m.winOpts || (m.teams.length ? [...m.teams, 'Draw', 'Total Goal', 'Total Card'] : [m.display]);
+    const team = opts[ti];
+    const r = resOf(m.key);
+    const idx = r.teams.indexOf(team);
+    if (idx >= 0) r.teams.splice(idx, 1); else r.teams.push(team);
+    commitRes(m.key, r);
+  }
+  function toggleRate(mi, ri) {
+    const m = wmList[mi]; if (!m) return;
+    const rate = m.rates[ri];
+    const r = resOf(m.key);
+    const idx = r.rates.indexOf(rate);
+    if (idx >= 0) r.rates.splice(idx, 1); else r.rates.push(rate);
+    commitRes(m.key, r);
+  }
 
   // ── Render ─────────────────────────────────────────────────────
   function render() {
@@ -336,29 +391,55 @@
           <td><span class="badge">${i+1}</span></td>
           <td style="font-weight:600">${esc(r.uid)}</td>
           <td style="color:var(--text-secondary)">${esc(r.match)}</td>
+          <td>${r.team ? esc(r.team) : '—'}</td>
           <td style="text-align:right" class="num">${r.amt.toFixed(2)}</td>
+          <td style="text-align:right" class="num">${typeof r.rate === 'number' ? r.rate.toFixed(2)+'x' : '—'}</td>
           <td><button class="del-btn" onclick="delDebt(${r.id})" title="Delete">✕</button></td>
         </tr>`).join('')
-      : '<tr><td colspan="5" class="empty">No records yet.</td></tr>';
+      : '<tr><td colspan="7" class="empty">No records yet.</td></tr>';
 
-    document.getElementById('bet-body').innerHTML = bets.length
-      ? bets.map((r,i) => `<tr>
-          <td><span class="badge">${i+1}</span></td>
-          <td style="color:var(--text-secondary)">${esc(r.match)}</td>
-          <td style="text-align:right" class="num">${r.rate.toFixed(2)}x</td>
-          <td><button class="del-btn" onclick="delBet(${r.id})" title="Delete">✕</button></td>
-        </tr>`).join('')
-      : '<tr><td colspan="4" class="empty">No bet rates yet.</td></tr>';
+    // ── Section 2 — Result: winning outcomes (multi) + winning bet rates (multi) ──
+    const seen = {};
+    wmList = [];
+    debts.forEach(d => {
+      const k = d.match.trim().toLowerCase();
+      if (!seen[k]) { seen[k] = true; wmList.push({ key: k, display: d.match.trim(), teams: splitTeams(d.match), rates: [] }); }
+    });
+    wmList.sort((a,b) => a.display.localeCompare(b.display));
+    // distinct bet rates staked in each match (from Section 1 records)
+    wmList.forEach(m => {
+      const set = new Set();
+      debts.forEach(d => { if (d.match.trim().toLowerCase() === m.key && typeof d.rate === 'number') set.add(d.rate); });
+      m.rates = [...set].sort((a,b) => a - b);
+    });
+    document.getElementById('winners').innerHTML = wmList.length
+      ? wmList.map((m, mi) => {
+          const r = resOf(m.key);
+          m.winOpts = m.teams.length ? [...m.teams, 'Draw', 'Total Goal', 'Total Card'] : [m.display];
+          const teamBtns = m.winOpts.map((t, ti) =>
+            `<button class="win-pick${r.teams.includes(t)?' active':''}" onclick="toggleTeam(${mi},${ti})">${esc(t)}</button>`).join('');
+          const rateBtns = m.rates.length
+            ? m.rates.map((rt, ri) =>
+                `<button class="rate-pick${r.rates.includes(rt)?' active':''}" onclick="toggleRate(${mi},${ri})">${rt.toFixed(2)}x</button>`).join('')
+            : '<span class="wpick-lbl" style="opacity:.6">no rates yet</span>';
+          return `<div class="winner-row">
+            <div class="wm">${esc(m.display)}</div>
+            <div class="wpick-line"><span class="wpick-lbl">Winner</span>${teamBtns}</div>
+            <div class="wpick-line"><span class="wpick-lbl">Bet Rate</span>${rateBtns}</div>
+          </div>`;
+        }).join('')
+      : '<div class="empty" style="padding:12px 0">Add debt records to pick winners.</div>';
 
-    const betMap = {};
-    bets.forEach(b => { betMap[b.match.trim().toLowerCase()] = b.rate; });
     const rows = debts.map(d => {
-      const key = d.match.trim().toLowerCase();
-      const isMatch = key in betMap;
-      const rate = isMatch ? betMap[key] : null;
-      const final = isMatch ? d.amt * rate : null;
-      const diff = isMatch ? final - d.amt : null;
-      return { ...d, isMatch, rate, final, diff };
+      const mk = d.match.trim().toLowerCase();
+      const rate = typeof d.rate === 'number' ? d.rate : null;
+      const r = resOf(mk);                          // { teams[], rates[] }
+      const decided = r.teams.length > 0 && r.rates.length > 0;
+      const won = decided && r.teams.includes(d.team) && rate !== null && r.rates.includes(rate);
+      let final = null, diff = null, state = 'pending';
+      if (decided && won)  { state = 'win';  final = d.amt * rate; diff = final - d.amt; }
+      if (decided && !won) { state = 'lose'; final = 0; diff = 0 - d.amt; }
+      return { ...d, rate, state, final, diff };
     });
 
     document.getElementById('result-body').innerHTML = rows.length
@@ -369,20 +450,25 @@
             const sign = r.diff > 0 ? '+' : '';
             diffHtml = `<span class="${cls}" style="font-weight:600">${sign}${r.diff.toFixed(2)}</span>`;
           }
+          let resHtml;
+          if (r.state === 'win')       resHtml = `<span class="pill pill-yes">Win${r.rate===null?' (no rate)':''}</span>`;
+          else if (r.state === 'lose') resHtml = '<span class="pill" style="background:rgba(244,111,111,0.12);color:var(--red)">Lose</span>';
+          else                         resHtml = '<span class="pill pill-no">Pending</span>';
           return `<tr>
             <td style="font-weight:600">${esc(r.uid)}</td>
             <td style="color:var(--text-secondary)">${esc(r.match)}</td>
+            <td>${r.team ? esc(r.team) : '—'}</td>
             <td style="text-align:right" class="num">${r.amt.toFixed(2)}</td>
             <td style="text-align:right" class="num">${r.rate !== null ? r.rate.toFixed(2)+'x' : '—'}</td>
             <td style="text-align:right" class="num">${r.final !== null ? r.final.toFixed(2) : '—'}</td>
             <td style="text-align:right">${diffHtml}</td>
-            <td style="text-align:center"><span class="pill ${r.isMatch ? 'pill-yes':'pill-no'}">${r.isMatch?'Yes':'No'}</span></td>
+            <td style="text-align:center">${resHtml}</td>
           </tr>`;
         }).join('')
-      : '<tr><td colspan="7" class="empty">Add records and bet rates to see results.</td></tr>';
+      : '<tr><td colspan="8" class="empty">Add debt records to see results.</td></tr>';
 
     const totDiff = {};
-    rows.filter(r => r.isMatch).forEach(r => { totDiff[r.uid] = (totDiff[r.uid]||0) + r.diff; });
+    rows.filter(r => r.diff !== null).forEach(r => { totDiff[r.uid] = (totDiff[r.uid]||0) + r.diff; });
     const uids = Object.keys(totDiff);
     document.getElementById('summary-grid').innerHTML = uids.length
       ? uids.sort().map(uid => {
@@ -396,6 +482,64 @@
         }).join('')
       : '<div class="empty" style="grid-column:1/-1">No matched data yet.</div>';
   }
+
+  // ── FIFA World Cup 2026 match names for the Match Name picker (Section 1) ──
+  const WC_GROUPS = {
+    A: ['Mexico','South Korea','Czechia','South Africa'],
+    B: ['Switzerland','Canada','Qatar','Bosnia & Herzegovina'],
+    C: ['Brazil','Morocco','Haiti','Scotland'],
+    D: ['USA','Turkey','Australia','Paraguay'],
+    E: ['Germany','Ecuador','Ivory Coast','Curaçao'],
+    F: ['Netherlands','Japan','Sweden','Tunisia'],
+    G: ['Belgium','Egypt','Iran','New Zealand'],
+    H: ['Spain','Cape Verde','Saudi Arabia','Uruguay'],
+    I: ['France','Senegal','Iraq','Norway'],
+    J: ['Argentina','Algeria','Austria','Jordan'],
+    K: ['Portugal','DR Congo','Uzbekistan','Colombia'],
+    L: ['England','Croatia','Ghana','Panama'],
+  };
+  const ALL_MATCHES = [];
+  for (const teams of Object.values(WC_GROUPS))
+    for (let i = 0; i < teams.length; i++)
+      for (let j = i + 1; j < teams.length; j++)
+        ALL_MATCHES.push(`${teams[i]} vs ${teams[j]}`);
+
+  // ── Match Name keyword autocomplete ──
+  let acFiltered = [];
+  function onMatchInput() {
+    const box = document.getElementById('d-match-ac');
+    const terms = document.getElementById('d-match').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    acFiltered = (terms.length ? ALL_MATCHES.filter(m => { const ml = m.toLowerCase(); return terms.every(t => ml.includes(t)); }) : ALL_MATCHES).slice(0, 15);
+    box.innerHTML = acFiltered.length
+      ? acFiltered.map((m, idx) => `<div class="ac-item" onmousedown="selectMatch(${idx})">${esc(m)}</div>`).join('')
+      : '<div class="ac-empty">No match found</div>';
+    box.classList.add('open');
+    fillTeams('d-match', 'd-team');
+  }
+  function selectMatch(idx) {
+    const m = acFiltered[idx]; if (m === undefined) return;
+    document.getElementById('d-match').value = m;
+    document.getElementById('d-match-ac').classList.remove('open');
+    fillTeams('d-match', 'd-team');
+  }
+  // ── User ID keyword autocomplete (suggests existing IDs; free entry still allowed) ──
+  let acUids = [];
+  function onUidInput() {
+    const box = document.getElementById('d-uid-ac');
+    const q = document.getElementById('d-uid').value.trim().toLowerCase();
+    const all = [...new Set(debts.map(d => d.uid).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    acUids = (q ? all.filter(u => u.toLowerCase().includes(q)) : all).slice(0, 8);
+    box.innerHTML = acUids.map((u, idx) => `<div class="ac-item" onmousedown="selectUid(${idx})">${esc(u)}</div>`).join('');
+    box.classList.toggle('open', acUids.length > 0);
+  }
+  function selectUid(idx) {
+    const u = acUids[idx]; if (u === undefined) return;
+    document.getElementById('d-uid').value = u;
+    document.getElementById('d-uid-ac').classList.remove('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.ac-wrap')) document.querySelectorAll('.ac-list').forEach(el => el.classList.remove('open'));
+  });
 </script>
 </body>
 </html>
