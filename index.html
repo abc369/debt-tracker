@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt Tracker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2235;
+    --border: #2a2f45;
+    --text: #e8eaf0;
+    --text-secondary: #8b90a4;
+    --text-muted: #555c75;
+    --accent: #4f7fff;
+    --green: #3ecf8e;
+    --red: #f46f6f;
+    --gray: #555c75;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  header p { font-size: 12px; color: var(--text-secondary); }
+
+  .save-status {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .save-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    transition: background 0.3s;
+  }
+  .save-dot.saving { background: #f5a623; }
+  .save-dot.error  { background: var(--red); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .sec-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sec-title span.dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .form-grid {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .fg3 { grid-template-columns: 1fr 1fr 1fr auto; }
+  .fg2 { grid-template-columns: 1fr 1fr auto; }
+
+  @media (max-width: 600px) {
+    .fg3, .fg2 { grid-template-columns: 1fr; }
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--text-muted); }
+
+  .btn-add {
+    height: 36px;
+    padding: 0 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+    align-self: end;
+  }
+  .btn-add:hover { opacity: 0.85; }
+
+  .btn-clear {
+    height: 32px;
+    padding: 0 12px;
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(244,111,111,0.3);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.15s;
+  }
+  .btn-clear:hover { background: rgba(244,111,111,0.08); }
+
+  .err {
+    font-size: 11px;
+    color: var(--red);
+    min-height: 16px;
+    margin-top: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+    table-layout: fixed;
+  }
+  th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 0 8px;
+  }
+  td {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    word-break: break-word;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 3px 6px;
+    border-radius: var(--radius-sm);
+    transition: background 0.12s, color 0.12s;
+  }
+  .del-btn:hover { background: rgba(244,111,111,0.12); color: var(--red); }
+
+  .badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .pill-yes { background: rgba(62,207,142,0.12); color: var(--green); }
+  .pill-no  { background: rgba(139,144,164,0.1); color: var(--text-muted); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 24px 0;
+  }
+
+  .summary-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+  .summary-note {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-muted);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 6px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  .mc {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .mc-uid {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mc-uid::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .mc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .mc-lbl { font-size: 11px; color: var(--text-muted); }
+  .mc-val { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .c-pos  { color: var(--green); }
+  .c-neg  { color: var(--red); }
+  .c-neu  { color: var(--gray); }
+  .c-acc  { color: var(--text-secondary); }
+
+  .num { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">💰</div>
+    <div>
+      <h1>Debt Tracker</h1>
+      <p>Record debts, set bet rates, auto-calculate results</p>
+    </div>
+    <div class="save-status">
+      <span class="save-dot" id="save-dot"></span>
+      <span id="save-label">Saved</span>
+    </div>
+  </header>
+
+  <!-- SECTION 1 -->
+  <div class="card">
+    <div class="sec-title"><span class="dot"></span>Section 1 — Debt Records</div>
+    <div class="form-grid fg3">
+      <div>
+        <label for="d-uid">User ID</label>
+        <input id="d-uid" type="text" placeholder="e.g. ANDREW">
+      </div>
+      <div>
+        <label for="d-amt">Debt Amount (RM)</label>
+        <input id="d-amt" type="number" min="0" step="0.01" placeholder="50.00">
+      </div>
+      <div>
+        <label for="d-match">Match Name</label>
+        <input id="d-match" type="text" placeholder="e.g. Final A">
+      </div>
+      <div>
+        <label style="visibility:hidden">x</label>
+        <button class="btn-add" onclick="addDebt()">+ Add</button>
+      </div>
+    </div>
+    <div class="err" id="err-debt"></div>
+    <table>
+      <colgroup>
+        <col style="width:7%"><col style="width:18%"><col style="width:38%"><col style="width:27%"><col style="width:10%">
+      </colgroup>
+      <thead>
+        <tr><th>#</th><th>User ID</th><th>Match Name</th><th style="text-align:right">Debt (RM)</th><th></th></tr>
+      </thead>
+      <tbody id="debt-body">
+        <tr><td colspan="5" class="empty">No records yet.</td></tr>
+      </tbody>
+    </table>
+    <button class="btn-clear" onclick="clearDebts()">🗑 Clear all debts</button>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="card">
+    <div class="sec-title"><span class="dot"></span>Section 2 — Bet Rates</div>
+    <div class="form-grid fg2">
+      <div>
+        <label for="b-match">Match Name 2</label>
+        <input id="b-match" type="text" placeholder="e.g. Final A">
+      </div>
+      <div>
+        <label for="b-rate">Bet Rate (multiplier)</label>
+        <input id="b-rate" type="number" min="0" step="0.01" placeholder="e.g. 1.5">
+      </div>
+      <div>
+        <label style="visibility:hidden">x</label>
+        <button class="btn-add" onclick="addBet()">+ Add</button>
+      </div>
+    </div>
+    <div class="err" id="err-bet"></div>
+    <table>
+      <colgroup>
+        <col style="width:7%"><col style="width:63%"><col style="width:22%"><col style="width:8%">
+      </colgroup>
+      <thead>
+        <tr><th>#</th><th>Match Name 2</th><th style="text-align:right">Bet Rate</th><th></th></tr>
+      </thead>
+      <tbody id="bet-body">
+        <tr><td colspan="4" class="empty">No bet rates yet.</td></tr>
+      </tbody>
+    </table>
+    <button class="btn-clear" onclick="clearBets()">🗑 Clear all bet rates</button>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="card">
+    <div class="sec-title"><span class="dot"></span>Section 3 — Results</div>
+    <table>
+      <colgroup>
+        <col style="width:13%"><col style="width:23%"><col style="width:13%"><col style="width:11%"><col style="width:13%"><col style="width:16%"><col style="width:11%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Match Name</th>
+          <th style="text-align:right">Debt (RM)</th>
+          <th style="text-align:right">Rate</th>
+          <th style="text-align:right">Final (RM)</th>
+          <th style="text-align:right">Final − Debt</th>
+          <th style="text-align:center">Match?</th>
+        </tr>
+      </thead>
+      <tbody id="result-body">
+        <tr><td colspan="7" class="empty">Add debt records and bet rates to see results.</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+
+    <div class="summary-title">
+      Summary by User ID
+      <span class="summary-note">(matched rows only)</span>
+    </div>
+    <div class="summary-grid" id="summary-grid">
+      <div class="empty" style="grid-column:1/-1">No matched data yet.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let debts = [], bets = [], dId = 1, bId = 1;
+  let saveTimer = null;
+
+  // ── Status indicator ──────────────────────────────────────────
+  function setStatus(state, text) {
+    const dot = document.getElementById('save-dot');
+    const lbl = document.getElementById('save-label');
+    dot.className = 'save-dot ' + (state === 'saving' ? 'saving' : state === 'error' ? 'error' : '');
+    lbl.textContent = text;
+  }
+
+  // ── Persistence ───────────────────────────────────────────────
+  const LS_KEY = 'debt-tracker-data';
+
+  function saveLocal() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ debts, bets, dId, bId }));
+    } catch(e) {}
+  }
+
+  function loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return false;
+      const d = JSON.parse(raw);
+      debts = d.debts || [];
+      bets  = d.bets  || [];
+      dId   = d.dId   || (debts.length ? Math.max(...debts.map(x => x.id)) + 1 : 1);
+      bId   = d.bId   || (bets.length  ? Math.max(...bets.map(x => x.id))  + 1 : 1);
+      return true;
+    } catch(e) { return false; }
+  }
+
+  async function loadFromServer() {
+    try {
+      const res = await fetch('/api/data');
+      if (!res.ok) throw new Error();
+      const d = await res.json();
+      // Use server data if it has records, otherwise fall back to localStorage
+      const serverHasData = (d.debts && d.debts.length) || (d.bets && d.bets.length);
+      const localHasData  = loadLocal();
+      if (serverHasData) {
+        debts = d.debts || [];
+        bets  = d.bets  || [];
+        dId   = d.dId   || (debts.length ? Math.max(...debts.map(x => x.id)) + 1 : 1);
+        bId   = d.bId   || (bets.length  ? Math.max(...bets.map(x => x.id))  + 1 : 1);
+        saveLocal(); // keep localStorage in sync
+      } else if (localHasData) {
+        // Server empty but localStorage has data — push it up to server
+        await saveToServer();
+      }
+      setStatus('saved', 'Saved');
+      render();
+    } catch {
+      // Server offline — fall back to localStorage
+      const ok = loadLocal();
+      setStatus('error', ok ? 'Offline (local)' : 'Server offline');
+      render();
+    }
+  }
+
+  function scheduleSave() {
+    setStatus('saving', 'Saving…');
+    saveLocal(); // save locally immediately (instant)
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveToServer, 600);
+  }
+
+  async function saveToServer() {
+    try {
+      const res = await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ debts, bets, dId, bId })
+      });
+      if (!res.ok) throw new Error();
+      setStatus('saved', 'Saved');
+    } catch {
+      setStatus('error', 'Server offline');
+      // Data is already in localStorage — won't be lost
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  // ── Add / Delete ──────────────────────────────────────────────
+  function addDebt() {
+    const uid   = document.getElementById('d-uid').value.trim();
+    const amt   = parseFloat(document.getElementById('d-amt').value);
+    const match = document.getElementById('d-match').value.trim();
+    const err   = document.getElementById('err-debt');
+    if (!uid)               { err.textContent = 'Please enter a User ID.'; return; }
+    if (!match)             { err.textContent = 'Please enter a Match name.'; return; }
+    if (isNaN(amt) || amt < 0) { err.textContent = 'Please enter a valid amount.'; return; }
+    err.textContent = '';
+    debts.push({ id: dId++, uid, amt, match });
+    document.getElementById('d-uid').value   = '';
+    document.getElementById('d-amt').value   = '';
+    document.getElementById('d-match').value = '';
+    render();
+    scheduleSave();
+  }
+
+  function addBet() {
+    const match = document.getElementById('b-match').value.trim();
+    const rate  = parseFloat(document.getElementById('b-rate').value);
+    const err   = document.getElementById('err-bet');
+    if (!match)               { err.textContent = 'Please enter a Match name 2.'; return; }
+    if (isNaN(rate) || rate < 0) { err.textContent = 'Please enter a valid bet rate.'; return; }
+    err.textContent = '';
+    bets.push({ id: bId++, match, rate });
+    document.getElementById('b-match').value = '';
+    document.getElementById('b-rate').value  = '';
+    render();
+    scheduleSave();
+  }
+
+  function delDebt(id) { debts = debts.filter(r => r.id !== id); render(); scheduleSave(); }
+  function delBet(id)  { bets  = bets.filter(r => r.id !== id);  render(); scheduleSave(); }
+
+  function clearDebts() {
+    if (!confirm('Clear all debt records?')) return;
+    debts = []; dId = 1;
+    render(); scheduleSave();
+  }
+
+  function clearBets() {
+    if (!confirm('Clear all bet rates?')) return;
+    bets = []; bId = 1;
+    render(); scheduleSave();
+  }
+
+  // ── Render ────────────────────────────────────────────────────
+  function render() {
+    document.getElementById('debt-body').innerHTML = debts.length
+      ? debts.map((r, i) => `
+          <tr>
+            <td><span class="badge">${i+1}</span></td>
+            <td style="font-weight:600">${esc(r.uid)}</td>
+            <td style="color:var(--text-secondary)">${esc(r.match)}</td>
+            <td style="text-align:right" class="num">${r.amt.toFixed(2)}</td>
+            <td><button class="del-btn" onclick="delDebt(${r.id})" title="Delete">✕</button></td>
+          </tr>`).join('')
+      : '<tr><td colspan="5" class="empty">No records yet.</td></tr>';
+
+    document.getElementById('bet-body').innerHTML = bets.length
+      ? bets.map((r, i) => `
+          <tr>
+            <td><span class="badge">${i+1}</span></td>
+            <td style="color:var(--text-secondary)">${esc(r.match)}</td>
+            <td style="text-align:right" class="num">${r.rate.toFixed(2)}x</td>
+            <td><button class="del-btn" onclick="delBet(${r.id})" title="Delete">✕</button></td>
+          </tr>`).join('')
+      : '<tr><td colspan="4" class="empty">No bet rates yet.</td></tr>';
+
+    const betMap = {};
+    bets.forEach(b => { betMap[b.match.trim().toLowerCase()] = b.rate; });
+
+    const rows = debts.map(d => {
+      const key     = d.match.trim().toLowerCase();
+      const isMatch = key in betMap;
+      const rate    = isMatch ? betMap[key] : null;
+      const final   = isMatch ? d.amt * rate : null;
+      const diff    = isMatch ? final - d.amt : null;
+      return { ...d, isMatch, rate, final, diff };
+    });
+
+    document.getElementById('result-body').innerHTML = rows.length
+      ? rows.map(r => {
+          let diffHtml = '—';
+          if (r.diff !== null) {
+            const cls  = r.diff > 0 ? 'c-pos' : r.diff < 0 ? 'c-neg' : 'c-neu';
+            const sign = r.diff > 0 ? '+' : '';
+            diffHtml = `<span class="${cls}" style="font-weight:600">${sign}${r.diff.toFixed(2)}</span>`;
+          }
+          return `<tr>
+            <td style="font-weight:600">${esc(r.uid)}</td>
+            <td style="color:var(--text-secondary)">${esc(r.match)}</td>
+            <td style="text-align:right" class="num">${r.amt.toFixed(2)}</td>
+            <td style="text-align:right" class="num">${r.rate !== null ? r.rate.toFixed(2)+'x' : '—'}</td>
+            <td style="text-align:right" class="num">${r.final !== null ? r.final.toFixed(2) : '—'}</td>
+            <td style="text-align:right">${diffHtml}</td>
+            <td style="text-align:center">
+              <span class="pill ${r.isMatch ? 'pill-yes' : 'pill-no'}">${r.isMatch ? 'Yes' : 'No'}</span>
+            </td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="7" class="empty">Add records and bet rates to see results.</td></tr>';
+
+    const totDiff = {};
+    rows.filter(r => r.isMatch).forEach(r => {
+      totDiff[r.uid] = (totDiff[r.uid] || 0) + r.diff;
+    });
+
+    const uids = Object.keys(totDiff);
+    document.getElementById('summary-grid').innerHTML = uids.length
+      ? uids.sort().map(uid => {
+          const d    = totDiff[uid];
+          const cls  = d > 0 ? 'c-pos' : d < 0 ? 'c-neg' : 'c-neu';
+          const sign = d > 0 ? '+' : '';
+          return `<div class="mc">
+            <div class="mc-uid">${esc(uid)}</div>
+            <div class="mc-row">
+              <span class="mc-lbl">Sum of (Final − Debt)</span>
+              <span class="mc-val ${cls}">${sign}${d.toFixed(2)}</span>
+            </div>
+          </div>`;
+        }).join('')
+      : '<div class="empty" style="grid-column:1/-1">No matched data yet.</div>';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const t = e.target;
+    if (t.id === 'd-uid' || t.id === 'd-amt' || t.id === 'd-match') addDebt();
+    if (t.id === 'b-match' || t.id === 'b-rate') addBet();
+  });
+
+  // ── Boot ──────────────────────────────────────────────────────
+  loadFromServer();
+</script>
+</body>
+</html>
