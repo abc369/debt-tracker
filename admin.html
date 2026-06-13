@@ -62,6 +62,12 @@
   .ac-item { padding: 8px 12px; font-size: 13px; cursor: pointer; color: var(--text); }
   .ac-item:hover { background: var(--accent); color: #fff; }
   .ac-empty { padding: 8px 12px; font-size: 12px; color: var(--text-muted); }
+  .ms-box { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 6px; min-height: 36px; cursor: text; }
+  .ms-box:focus-within { border-color: var(--accent); }
+  .ms-box input { flex: 1; min-width: 70px; width: auto; background: transparent; border: none; padding: 4px; color: var(--text); font-size: 13px; outline: none; }
+  .ms-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(79,127,255,0.15); color: var(--accent); border: 1px solid rgba(79,127,255,0.3); border-radius: 4px; padding: 2px 4px 2px 8px; font-size: 12px; font-weight: 600; }
+  .ms-chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 12px; line-height: 1; padding: 0 2px; }
+  .ms-chip button:hover { color: var(--red); }
   .btn-add { height: 36px; padding: 0 16px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; align-self: end; }
   .btn-add:hover { opacity: 0.85; }
   .btn-clear { height: 32px; padding: 0 12px; background: transparent; color: var(--red); border: 1px solid rgba(244,111,111,0.3); border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; margin-top: 12px; transition: background 0.15s; }
@@ -93,6 +99,8 @@
   .win-pick:hover, .rate-pick:hover { border-color: var(--text-secondary); }
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   .empty { text-align: center; color: var(--text-muted); font-size: 12px; padding: 24px 0; }
+  .filter-bar { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-field { flex: 1; min-width: 160px; }
   .summary-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 12px; }
   .summary-note { font-size: 10px; font-weight: 400; color: var(--text-muted); text-transform: none; letter-spacing: 0; margin-left: 6px; }
   .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
@@ -150,7 +158,7 @@
   <div class="card">
     <div class="sec-title"><span class="dot"></span>Section 1 — Debt Records</div>
     <div class="form-grid fg5">
-      <div><label for="d-uid">User ID</label><div class="ac-wrap"><input id="d-uid" type="text" autocomplete="off" placeholder="e.g. ANDREW" oninput="onUidInput()" onfocus="onUidInput()"><div class="ac-list" id="d-uid-ac"></div></div></div>
+      <div><label for="d-uid">User ID <span style="text-transform:none;letter-spacing:0;color:var(--text-muted)">(multiple)</span></label><div class="ac-wrap"><div class="ms-box" id="d-uid-box" onclick="document.getElementById('d-uid').focus()"><span id="d-uid-chips"></span><input id="d-uid" type="text" autocomplete="off" placeholder="e.g. ANDREW" oninput="onUidInput()" onfocus="onUidInput()"></div><div class="ac-list" id="d-uid-ac"></div></div></div>
       <div><label for="d-amt">Debt Amount (RM)</label><input id="d-amt" type="number" min="0" step="0.01" placeholder="50.00"></div>
       <div><label for="d-match">Match Name</label><div class="ac-wrap"><input id="d-match" type="text" autocomplete="off" placeholder="Type a team, e.g. Iraq" oninput="onMatchInput()" onfocus="onMatchInput()"><div class="ac-list" id="d-match-ac"></div></div></div>
       <div><label for="d-team">Bet On (Team)</label><select id="d-team"><option value="">— pick match first —</option></select></div>
@@ -178,6 +186,16 @@
   <!-- Section 3 -->
   <div class="card">
     <div class="sec-title"><span class="dot"></span>Section 3 — Final Result</div>
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label for="f-uid">Filter by User ID</label>
+        <select id="f-uid" onchange="onFilterChange()"><option value="">All</option></select>
+      </div>
+      <div class="filter-field">
+        <label for="f-match">Filter by Match Name</label>
+        <select id="f-match" onchange="onFilterChange()"><option value="">All</option></select>
+      </div>
+    </div>
     <div class="tscroll tscroll-5">
     <table>
       <colgroup><col style="width:12%"><col style="width:18%"><col style="width:12%"><col style="width:11%"><col style="width:9%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>
@@ -203,6 +221,8 @@
   let debts = [], dId = 1;
   let results = {};   // { matchNameLower: winningTeam }
   let wmList = [];    // winner-picker rows, rebuilt each render: [{ key, display, teams }]
+  let filterUid = '', filterMatch = '';   // Section 3 filters ('' = All)
+  let selectedUids = [];   // Section 1 — User IDs picked for the next record (multi)
   let saveTimer = null;
   let adminToken = sessionStorage.getItem('admin-token') || '';
 
@@ -248,7 +268,8 @@
     if (e.key !== 'Enter') return;
     const t = e.target;
     if (t.id === 'l-user' || t.id === 'l-pass') doLogin();
-    if (t.id === 'd-uid' || t.id === 'd-amt' || t.id === 'd-match' || t.id === 'd-rate') addDebt();
+    if (t.id === 'd-uid') { const v = t.value.trim(); if (v) { addUidChip(v); e.preventDefault(); } else addDebt(); return; }
+    if (t.id === 'd-amt' || t.id === 'd-match' || t.id === 'd-rate') addDebt();
   });
 
   // ── Status ─────────────────────────────────────────────────────
@@ -312,21 +333,39 @@
   // ── Helpers ────────────────────────────────────────────────────
   function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  // ── Section 3 filters ──────────────────────────────────────────
+  function onFilterChange() {
+    filterUid = document.getElementById('f-uid').value;
+    filterMatch = document.getElementById('f-match').value;
+    render();
+  }
+  // Rebuild a filter <select> from distinct values, keeping the current pick if still valid
+  function fillFilter(selId, values, current) {
+    const valid = values.includes(current) ? current : '';
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">All</option>' + values.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    sel.value = valid;
+    return valid;
+  }
+
   // ── Add / Delete ───────────────────────────────────────────────
   function addDebt() {
-    const uid = document.getElementById('d-uid').value.trim();
+    const typed = document.getElementById('d-uid').value.trim();
+    const uids = [...selectedUids];
+    if (typed && !uids.some(u => u.toLowerCase() === typed.toLowerCase())) uids.push(typed);
     const amt = parseFloat(document.getElementById('d-amt').value);
     const match = document.getElementById('d-match').value.trim();
     const team = document.getElementById('d-team').value;
     const rate = parseFloat(document.getElementById('d-rate').value);
     const err = document.getElementById('err-debt');
-    if (!uid)   { err.textContent = 'Please enter a User ID.'; return; }
+    if (!uids.length) { err.textContent = 'Please enter a User ID.'; return; }
     if (!match) { err.textContent = 'Please enter a Match name.'; return; }
     if (!team)  { err.textContent = 'Please pick the team this bet is on.'; return; }
     if (isNaN(amt) || amt < 0)  { err.textContent = 'Please enter a valid amount.'; return; }
     if (isNaN(rate) || rate < 0) { err.textContent = 'Please enter a valid bet rate.'; return; }
     err.textContent = '';
-    debts.push({ id: dId++, uid, amt, match, team, rate });
+    uids.forEach(uid => debts.push({ id: dId++, uid, amt, match, team, rate }));
+    selectedUids = []; renderUidChips();
     document.getElementById('d-uid').value = '';
     document.getElementById('d-amt').value = '';
     document.getElementById('d-match').value = '';
@@ -442,8 +481,15 @@
       return { ...d, rate, state, final, diff };
     });
 
-    document.getElementById('result-body').innerHTML = rows.length
-      ? rows.map(r => {
+    // Filter dropdowns: populate from distinct values, then filter rows + summary
+    const allUids = [...new Set(debts.map(d => d.uid).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    const allMatches = [...new Set(debts.map(d => d.match).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    filterUid = fillFilter('f-uid', allUids, filterUid);
+    filterMatch = fillFilter('f-match', allMatches, filterMatch);
+    const shownRows = rows.filter(r => (!filterUid || r.uid === filterUid) && (!filterMatch || r.match === filterMatch));
+
+    document.getElementById('result-body').innerHTML = shownRows.length
+      ? shownRows.map(r => {
           let diffHtml = '—';
           if (r.diff !== null) {
             const cls = r.diff > 0 ? 'c-pos' : r.diff < 0 ? 'c-neg' : 'c-neu';
@@ -465,10 +511,10 @@
             <td style="text-align:center">${resHtml}</td>
           </tr>`;
         }).join('')
-      : '<tr><td colspan="8" class="empty">Add debt records to see results.</td></tr>';
+      : `<tr><td colspan="8" class="empty">${debts.length ? 'No records match the selected filter.' : 'Add debt records to see results.'}</td></tr>`;
 
     const totDiff = {};
-    rows.filter(r => r.diff !== null).forEach(r => { totDiff[r.uid] = (totDiff[r.uid]||0) + r.diff; });
+    shownRows.filter(r => r.diff !== null).forEach(r => { totDiff[r.uid] = (totDiff[r.uid]||0) + r.diff; });
     const uids = Object.keys(totDiff);
     document.getElementById('summary-grid').innerHTML = uids.length
       ? uids.sort().map(uid => {
@@ -528,15 +574,29 @@
     const box = document.getElementById('d-uid-ac');
     const q = document.getElementById('d-uid').value.trim().toLowerCase();
     const all = [...new Set(debts.map(d => d.uid).filter(Boolean))].sort((a,b) => a.localeCompare(b));
-    acUids = (q ? all.filter(u => u.toLowerCase().includes(q)) : all).slice(0, 8);
+    acUids = (q ? all.filter(u => u.toLowerCase().includes(q)) : all)
+      .filter(u => !selectedUids.some(s => s.toLowerCase() === u.toLowerCase())).slice(0, 8);
     box.innerHTML = acUids.map((u, idx) => `<div class="ac-item" onmousedown="selectUid(${idx})">${esc(u)}</div>`).join('');
     box.classList.toggle('open', acUids.length > 0);
   }
   function selectUid(idx) {
     const u = acUids[idx]; if (u === undefined) return;
-    document.getElementById('d-uid').value = u;
+    addUidChip(u);
+    document.getElementById('d-uid').focus();
+  }
+  // Section 1 — multiple User ID chips
+  function renderUidChips() {
+    document.getElementById('d-uid-chips').innerHTML = selectedUids.map((u, i) =>
+      `<span class="ms-chip">${esc(u)}<button type="button" onclick="removeUidChip(${i})" title="Remove">✕</button></span>`).join('');
+  }
+  function addUidChip(uid) {
+    uid = String(uid).trim(); if (!uid) return;
+    if (!selectedUids.some(u => u.toLowerCase() === uid.toLowerCase())) selectedUids.push(uid);
+    document.getElementById('d-uid').value = '';
+    renderUidChips();
     document.getElementById('d-uid-ac').classList.remove('open');
   }
+  function removeUidChip(i) { selectedUids.splice(i, 1); renderUidChips(); document.getElementById('d-uid').focus(); }
   document.addEventListener('click', e => {
     if (!e.target.closest('.ac-wrap')) document.querySelectorAll('.ac-list').forEach(el => el.classList.remove('open'));
   });

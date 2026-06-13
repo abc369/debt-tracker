@@ -37,6 +37,11 @@
   .pill-no  { background: rgba(139,144,164,0.1); color: var(--text-muted); }
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   .empty { text-align: center; color: var(--text-muted); font-size: 12px; padding: 24px 0; }
+  .filter-bar { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-field { flex: 1; min-width: 160px; }
+  .filter-field label { display: block; font-size: 11px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .filter-field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s; }
+  .filter-field select:focus { border-color: var(--accent); }
   .summary-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 12px; }
   .summary-note { font-size: 10px; font-weight: 400; color: var(--text-muted); text-transform: none; letter-spacing: 0; margin-left: 6px; }
   .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
@@ -96,6 +101,16 @@
   <!-- Section 3 -->
   <div class="card">
     <div class="sec-title"><span class="dot"></span>Section 3 — Final Result</div>
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label for="f-uid">Filter by User ID</label>
+        <select id="f-uid" onchange="onFilterChange()"><option value="">All</option></select>
+      </div>
+      <div class="filter-field">
+        <label for="f-match">Filter by Match Name</label>
+        <select id="f-match" onchange="onFilterChange()"><option value="">All</option></select>
+      </div>
+    </div>
     <div class="tscroll tscroll-5">
     <table>
       <colgroup><col style="width:12%"><col style="width:18%"><col style="width:12%"><col style="width:11%"><col style="width:9%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>
@@ -121,6 +136,9 @@
 <script>
   function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  let lastDebts = [], lastResults = {};      // cache of latest server data (for re-render on filter change)
+  let filterUid = '', filterMatch = '';      // Section 3 filters ('' = All)
+
   async function load() {
     try {
       const res = await fetch('/api/data');
@@ -130,6 +148,20 @@
     } catch {
       document.getElementById('last-updated').textContent = 'Failed to load';
     }
+  }
+
+  function onFilterChange() {
+    filterUid = document.getElementById('f-uid').value;
+    filterMatch = document.getElementById('f-match').value;
+    render(lastDebts, lastResults);
+  }
+  // Rebuild a filter <select> from distinct values, keeping the current pick if still valid
+  function fillFilter(selId, values, current) {
+    const valid = values.includes(current) ? current : '';
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">All</option>' + values.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    sel.value = valid;
+    return valid;
   }
 
   function resOf(results, mk) {
@@ -142,6 +174,7 @@
 
   function render(debts, results) {
     results = results || {};
+    lastDebts = debts; lastResults = results;
     document.getElementById('debt-body').innerHTML = debts.length
       ? debts.map((r,i) => `<tr>
           <td><span class="badge">${i+1}</span></td>
@@ -181,8 +214,15 @@
       return { ...d, rate, state, final, diff };
     });
 
-    document.getElementById('result-body').innerHTML = rows.length
-      ? rows.map(r => {
+    // Filter dropdowns: populate from distinct values, then filter rows + summary
+    const allUids = [...new Set(debts.map(d => d.uid).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    const allMatches = [...new Set(debts.map(d => d.match).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+    filterUid = fillFilter('f-uid', allUids, filterUid);
+    filterMatch = fillFilter('f-match', allMatches, filterMatch);
+    const shownRows = rows.filter(r => (!filterUid || r.uid === filterUid) && (!filterMatch || r.match === filterMatch));
+
+    document.getElementById('result-body').innerHTML = shownRows.length
+      ? shownRows.map(r => {
           let diffHtml = '—';
           if (r.diff !== null) {
             const cls = r.diff > 0 ? 'c-pos' : r.diff < 0 ? 'c-neg' : 'c-neu';
@@ -204,10 +244,10 @@
             <td style="text-align:center">${resultHtml}</td>
           </tr>`;
         }).join('')
-      : '<tr><td colspan="8" class="empty">No data yet.</td></tr>';
+      : `<tr><td colspan="8" class="empty">${debts.length ? 'No records match the selected filter.' : 'No data yet.'}</td></tr>`;
 
     const totDiff = {};
-    rows.filter(r => r.diff !== null).forEach(r => { totDiff[r.uid] = (totDiff[r.uid] || 0) + r.diff; });
+    shownRows.filter(r => r.diff !== null).forEach(r => { totDiff[r.uid] = (totDiff[r.uid] || 0) + r.diff; });
     const uids = Object.keys(totDiff);
     document.getElementById('summary-grid').innerHTML = uids.length
       ? uids.sort().map(uid => {
